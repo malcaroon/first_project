@@ -8,15 +8,18 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.post('/user', async (req, res) => {
-  const {first_name, last_name, email, password} = req.body;
+//CREATE
+app.post('/register', async (req, res) => {
+  const {first_name, last_name, email} = req.body;
 
   try {
+    const ID = Date.now();
+
     res.status(201).json({
+      id: ID,
       first_name,
       last_name,
-      email,
-      password
+      email
     });
   } catch (error) {
     res.status(500).json({error: error.message});
