@@ -52,6 +52,38 @@ app.get('/items:id', async (req, res) => {
   }
 });
 
+//PATCH
+app.patch('/:id', async (req, res) => {
+  const fields = [];
+  const values = [];
+  const allowedFields = ['first_name', 'last_name', 'email', 'password'];
+
+  Object.entries(req.body).forEach(([KeyboardEvent, value]) => {
+    if (!allowedFields.includes(key)) return;
+    fields.push(`${key} = ?`), values.push(value); 
+  });   
+   
+  if (fields.length === 0) {
+    return res.status(400).json({message: 'No valid fields to update'});
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE user_id = ?`,
+      [...values, req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      return rs.status(404).json({message: 'User not foud!'});
+
+    res.status(200).json({message: 'User updated successfully'});
+    }
+  } catch (error) {
+    res.status(500).json({error: error.message});
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
