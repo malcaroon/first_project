@@ -83,6 +83,28 @@ app.patch('/:id', async (req, res) => {
   }
 });
 
+//PUT
+app.put('/:id', async (req, res) => {
+  const {first_name, last_name, email, password} = req.body;
+  try {
+    if (!first_name || !last_name || !email || !password) {
+      return res.status(400).json({message: 'Missing required fields'});
+    }
+
+    const [result] = await pool.query(
+      'UPDATE users SET first_name = ?, last_name = ?, email = ?, password = ? WHERE user_id = ?',
+      [first_name, last_name, email, password, req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({message: 'User not found'});
+    }
+
+    res.status(200).json({message: 'User update successfully'});
+  } catch (error) {
+    res.status(500).json({error: error.message});
+  }
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
