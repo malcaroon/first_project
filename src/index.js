@@ -123,6 +123,25 @@ app.delete('/:id', async (req, res) => {
   }
 })
 
+//DELETE (all users)
+app.delete('/', async (req, res) => {
+  try {
+    const [result] = await pool.query('DELETE FROM users');
+
+    if (result.affectedRows > 0) {
+      res
+        .status(200)
+        .json({message: 'Deleted ${result.affectedRows} users successfully!'});
+    } else {
+      res.status(404).json({
+        message: 'No users found to delete.'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({error: error.message});
+  }
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
