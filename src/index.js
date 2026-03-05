@@ -106,6 +106,23 @@ app.put('/:id', async (req, res) => {
   }
 });
 
+//DELETE (one user)
+app.delete('/:id', async (req, res) => {
+  try {
+    const [result] = await pool.query('DELETE FROM users WHERE user_id = ?', [
+      req.params.id
+    ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({message: 'User not found'});
+    }
+
+    res.status(200).json({message: 'User deleted successfully'});
+  } catch (error) {
+    res.status(500).json({error: error.message});
+  }
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
