@@ -4,9 +4,17 @@ const port = 5000
 
 app.use(express.json());
 
+let users = [
+  { id:1, first_name: "Margo", role: "Cashier"},
+  { id:2, first_name: "Jessica", role: "Admin"},
+  { id:3, first_name: "Sophie", role: "Manager"}
+];
+
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
+
+
 
 //CREATE
 app.post('/register', async (req, res) => {
@@ -107,21 +115,33 @@ app.put('/:id', async (req, res) => {
 });
 
 //DELETE (one user)
-app.delete('/:id', async (req, res) => {
+app.delete('/:id', (req, res) => {
   try {
-    const [result] = await pool.query('DELETE FROM users WHERE user_id = ?', [
-      req.params.id
-    ]);
+    // Kunin ang ID mula sa URL (e.g., /1) at gawing number
+    const userIdToDelete = parseInt(req.params.id);
+    
+    // Bibilangin muna natin ang original na dami ng users
+    const initialCount = users.length;
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({message: 'User not found'});
+    // Ipi-filter natin ang array: Ititira lang natin yung mga HINDI katumbas ng ID na buburahin
+    users = users.filter(user => user.id !== userIdToDelete);
+
+    // I-check natin kung umikli ba yung array (ibig sabihin, may nabura talaga)
+    if (users.length < initialCount) {
+      res.status(200).json({
+        message: `User with ID ${userIdToDelete} deleted successfully!`,
+        remaining_users: users // Ipakita natin ang natirang users para sure
+      });
+    } else {
+      // Kung hindi umikli, ibig sabihin walang nahanap na ganung ID
+      res.status(404).json({
+        message: 'User not found!'
+      });
     }
-
-    res.status(200).json({message: 'User deleted successfully'});
   } catch (error) {
     res.status(500).json({error: error.message});
   }
-})
+});
 
 //DELETE (all users)
 app.delete('/', async (req, res) => {
@@ -129,19 +149,19 @@ app.delete('/', async (req, res) => {
     const [result] = await pool.query('DELETE FROM users');
 
     if (result.affectedRows > 0) {
-      res
-        .status(200)
-        .json({message: 'Deleted ${result.affectedRows} users successfully!'});
+      res.status(200).json({
+        message: `Deleted ${result.affectedRows} users successfully!`
+      });
     } else {
       res.status(404).json({
-        message: 'No users found to delete.'
+        message: 'No users found to delete. Empty na ang table.'
       });
     }
   } catch (error) {
     res.status(500).json({error: error.message});
   }
-})
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
-})
+});
